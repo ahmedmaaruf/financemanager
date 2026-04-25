@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PennyPal – Personal Finance Manager</title>
+    <meta name="description" content="Modern personal finance management tool with expense tracking, budget monitoring, financial goals, and insightful spending analytics.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- Dark Mode Toggle -->
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+    <span class="theme-toggle-icon">🌙</span>
+</button>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <h1>PennyPal</h1>
+            <p>Track your spending, manage budgets, and reach your goals</p>
+        </div>
+        <div class="header-btns">
+            <button class="btn btn-outline" id="editBudgetsBtn">
+                <span>⚙️</span> Edit Budgets
+            </button>
+            <button class="btn" id="addTransactionBtn">
+                <span>➕</span> Add Transaction
+            </button>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="grid grid-4">
+        <div class="card overview-card">
+            <div class="overview-card-header">
+                <span class="overview-card-title">All-Time Balance</span>
+                <span class="overview-card-icon">💰</span>
+            </div>
+            <div class="card-content">
+                <div class="overview-card-value neutral" id="totalBalance">$0.00</div>
+                <div class="overview-card-subtitle">Income minus all expenses</div>
+            </div>
+        </div>
+
+        <div class="card overview-card">
+            <div class="overview-card-header">
+                <span class="overview-card-title">Income (30 days)</span>
+                <span class="overview-card-icon">📈</span>
+            </div>
+            <div class="card-content">
+                <div class="overview-card-value positive" id="monthlyIncome">$0.00</div>
+                <div class="overview-card-subtitle" id="incomeSubtitle">Last 30 days</div>
+            </div>
+        </div>
+
+        <div class="card overview-card">
+            <div class="overview-card-header">
+                <span class="overview-card-title">Expenses (30 days)</span>
+                <span class="overview-card-icon">💸</span>
+            </div>
+            <div class="card-content">
+                <div class="overview-card-value negative" id="monthlyExpenses">$0.00</div>
+                <div class="overview-card-subtitle" id="expensesSubtitle">Last 30 days</div>
+            </div>
+        </div>
+
+        <div class="card overview-card">
+            <div class="overview-card-header">
+                <span class="overview-card-title">Budget Used (30 days)</span>
+                <span class="overview-card-icon">🎯</span>
+            </div>
+            <div class="card-content">
+                <div class="overview-card-value neutral" id="budgetPercentage">0%</div>
+                <div class="overview-card-subtitle" id="budgetDetail">$0.00 of $0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Net Savings Bar -->
+    <div class="card net-savings-card">
+        <div class="net-savings-header">
+            <div class="card-title"><span>💡</span> 30-Day Net Savings</div>
+            <div id="netSavingsAmount" class="net-savings-amount">$0.00</div>
+        </div>
+        <div class="progress-bar net-bar">
+            <div class="progress-fill success" id="netSavingsBar" style="width:0%"></div>
+        </div>
+        <div class="net-savings-footer">
+            <span id="netSavingsLabel">Savings rate: 0%</span>
+            <span id="netSavingsStatus" class="net-status neutral">—</span>
+        </div>
+    </div>
+
+    <!-- Charts and Budget Section -->
+    <div class="grid grid-2">
+        <!-- Budget Overview -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span>📊</span> Budget Overview <span class="subtitle-badge">Last 30 days</span></div>
+            </div>
+            <div class="card-content" id="budgetContainer"></div>
+        </div>
+
+        <!-- Spending Chart -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span>📈</span> 7-Day Spending</div>
+                <div id="chartTotalLabel" class="chart-total-label"></div>
+            </div>
+            <div class="card-content">
+                <div class="chart-container" id="spendingChart"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions and Goals -->
+    <div class="grid grid-3">
+        <!-- Transaction List -->
+        <div class="card grid-col-2">
+            <div class="card-header">
+                <div class="card-title"><span>📋</span> Transactions</div>
+                <div class="header-actions">
+                    <select id="transactionFilter" class="transaction-filter">
+                        <option value="all">All</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expenses</option>
+                        <option value="savings">Goal Savings</option>
+                    </select>
+                </div>
+            </div>
+            <div class="card-content">
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-title">No Transactions Yet</div>
+                        <div class="empty-state-subtitle">Start by adding your first transaction</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Goals -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title"><span>🎯</span> Financial Goals</div>
+                <button class="btn btn-small btn-outline" id="addGoalBtn" aria-label="Add goal">
+                    <span>➕</span>
+                </button>
+            </div>
+            <div class="card-content" id="goalsContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🎯</div>
+                    <div class="empty-state-title">No Goals Yet</div>
+                    <div class="empty-state-subtitle">Create your first financial goal</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD TRANSACTION MODAL
+══════════════════════════════════════════ -->
+<div class="modal" id="transactionModal" role="dialog" aria-modal="true" aria-labelledby="addTxTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-card">
+            <div class="modal-header-new">
+                <div class="modal-header-content">
+                    <div class="modal-icon-large">💸</div>
+                    <div>
+                        <h2 class="modal-title-new" id="addTxTitle">Add Transaction</h2>
+                        <p class="modal-subtitle">Track your spending with ease</p>
+                    </div>
+                </div>
+                <button class="modal-close-new" id="closeTransactionModal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="transactionForm" class="transaction-form-new" novalidate>
+                <div class="form-section">
+                    <label class="form-section-label">Transaction Type</label>
+                    <div class="type-selector">
+                        <label class="type-option">
+                            <input type="radio" name="type" value="expense" checked>
+                            <div class="type-option-content">
+                                <span class="type-icon">💸</span>
+                                <div class="type-text">
+                                    <span class="type-title">Expense</span>
+                                    <span class="type-desc">Money going out</span>
+                                </div>
+                            </div>
+                        </label>
+                        <label class="type-option">
+                            <input type="radio" name="type" value="income">
+                            <div class="type-option-content">
+                                <span class="type-icon">📈</span>
+                                <div class="type-text">
+                                    <span class="type-title">Income</span>
+                                    <span class="type-desc">Money coming in</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section" id="categorySection">
+                    <label class="form-section-label">Category</label>
+                    <div class="category-grid">
+                        <label class="category-option"><input type="radio" name="category" value="food" checked><div class="category-option-inner"><span class="category-emoji">🍽️</span><span class="category-name">Food</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="transportation"><div class="category-option-inner"><span class="category-emoji">🚗</span><span class="category-name">Transport</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="entertainment"><div class="category-option-inner"><span class="category-emoji">🎬</span><span class="category-name">Fun</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="shopping"><div class="category-option-inner"><span class="category-emoji">🛍️</span><span class="category-name">Shopping</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="utilities"><div class="category-option-inner"><span class="category-emoji">💡</span><span class="category-name">Utilities</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="healthcare"><div class="category-option-inner"><span class="category-emoji">🏥</span><span class="category-name">Health</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="education"><div class="category-option-inner"><span class="category-emoji">📚</span><span class="category-name">Education</span></div></label>
+                        <label class="category-option"><input type="radio" name="category" value="other"><div class="category-option-inner"><span class="category-emoji">📌</span><span class="category-name">Other</span></div></label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="amount">Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="amount-currency">$</span>
+                        <input type="number" id="amount" name="amount" min="0.01" step="0.01" placeholder="0.00" required class="amount-input">
+                    </div>
+                    <span class="field-error" id="amountError"></span>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="description">Description <span class="optional-badge">(Optional)</span></label>
+                    <input type="text" id="description" name="description" placeholder="e.g., Coffee at Starbucks" class="form-input" maxlength="100">
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="date">Date</label>
+                    <input type="date" id="date" name="date" required class="form-input">
+                    <span class="field-error" id="dateError"></span>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="notes">Notes <span class="optional-badge">(Optional)</span></label>
+                    <textarea id="notes" name="notes" placeholder="Add any additional notes..." rows="3" class="form-textarea" maxlength="300"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-form btn-form-cancel" id="cancelTransactionBtn">Cancel</button>
+                    <button type="submit" class="btn-form btn-form-submit"><span>➕</span> Add Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EDIT TRANSACTION MODAL
+══════════════════════════════════════════ -->
+<div class="modal" id="editTransactionModal" role="dialog" aria-modal="true" aria-labelledby="editTxTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-card">
+            <div class="modal-header-new">
+                <div class="modal-header-content">
+                    <div class="modal-icon-large">✏️</div>
+                    <div>
+                        <h2 class="modal-title-new" id="editTxTitle">Edit Transaction</h2>
+                        <p class="modal-subtitle">Update your transaction details</p>
+                    </div>
+                </div>
+                <button class="modal-close-new" id="closeEditTransactionModal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="editTransactionForm" class="transaction-form-new" novalidate>
+                <input type="hidden" id="editTransactionId">
+                <div class="form-section">
+                    <label class="form-section-label">Transaction Type</label>
+                    <div class="type-selector">
+                        <label class="type-option"><input type="radio" name="editType" value="expense" checked><div class="type-option-content"><span class="type-icon">💸</span><div class="type-text"><span class="type-title">Expense</span><span class="type-desc">Money going out</span></div></div></label>
+                        <label class="type-option"><input type="radio" name="editType" value="income"><div class="type-option-content"><span class="type-icon">📈</span><div class="type-text"><span class="type-title">Income</span><span class="type-desc">Money coming in</span></div></div></label>
+                    </div>
+                </div>
+
+                <div class="form-section" id="editCategorySection">
+                    <label class="form-section-label">Category</label>
+                    <div class="category-grid">
+                        <label class="category-option"><input type="radio" name="editCategory" value="food" checked><div class="category-option-inner"><span class="category-emoji">🍽️</span><span class="category-name">Food</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="transportation"><div class="category-option-inner"><span class="category-emoji">🚗</span><span class="category-name">Transport</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="entertainment"><div class="category-option-inner"><span class="category-emoji">🎬</span><span class="category-name">Fun</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="shopping"><div class="category-option-inner"><span class="category-emoji">🛍️</span><span class="category-name">Shopping</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="utilities"><div class="category-option-inner"><span class="category-emoji">💡</span><span class="category-name">Utilities</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="healthcare"><div class="category-option-inner"><span class="category-emoji">🏥</span><span class="category-name">Health</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="education"><div class="category-option-inner"><span class="category-emoji">📚</span><span class="category-name">Education</span></div></label>
+                        <label class="category-option"><input type="radio" name="editCategory" value="other"><div class="category-option-inner"><span class="category-emoji">📌</span><span class="category-name">Other</span></div></label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="editAmount">Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="amount-currency">$</span>
+                        <input type="number" id="editAmount" name="editAmount" min="0.01" step="0.01" placeholder="0.00" required class="amount-input">
+                    </div>
+                    <span class="field-error" id="editAmountError"></span>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="editDescription">Description <span class="optional-badge">(Optional)</span></label>
+                    <input type="text" id="editDescription" name="editDescription" placeholder="e.g., Coffee at Starbucks" class="form-input" maxlength="100">
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="editDate">Date</label>
+                    <input type="date" id="editDate" name="editDate" required class="form-input">
+                    <span class="field-error" id="editDateError"></span>
+                </div>
+
+                <div class="form-section">
+                    <label class="form-section-label" for="editNotes">Notes <span class="optional-badge">(Optional)</span></label>
+                    <textarea id="editNotes" name="editNotes" placeholder="Add any additional notes..." rows="3" class="form-textarea" maxlength="300"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-form btn-form-cancel" id="cancelEditTransactionBtn">Cancel</button>
+                    <button type="submit" class="btn-form btn-form-submit"><span>✓</span> Update Transaction</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD GOAL MODAL
+══════════════════════════════════════════ -->
+<div class="modal" id="goalModal" role="dialog" aria-modal="true" aria-labelledby="addGoalTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-card">
+            <div class="modal-header-new">
+                <div class="modal-header-content">
+                    <div class="modal-icon-large">🎯</div>
+                    <div>
+                        <h2 class="modal-title-new" id="addGoalTitle">Add Financial Goal</h2>
+                        <p class="modal-subtitle">Plan your financial future</p>
+                    </div>
+                </div>
+                <button class="modal-close-new" id="closeGoalModal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="goalForm" class="transaction-form-new" novalidate>
+                <div class="form-section">
+                    <label class="form-section-label" for="goalName">Goal Name</label>
+                    <input type="text" id="goalName" name="goalName" placeholder="e.g., Emergency Fund" required class="form-input" maxlength="60">
+                    <span class="field-error" id="goalNameError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="targetAmount">Target Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="amount-currency">$</span>
+                        <input type="number" id="targetAmount" name="targetAmount" min="0.01" step="0.01" placeholder="0.00" required class="amount-input">
+                    </div>
+                    <span class="field-error" id="targetAmountError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="currentAmount">Current Saved Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="amount-currency">$</span>
+                        <input type="number" id="currentAmount" name="currentAmount" min="0" step="0.01" placeholder="0.00" required class="amount-input">
+                    </div>
+                    <span class="field-error" id="currentAmountError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="deadline">Target Date</label>
+                    <input type="date" id="deadline" name="deadline" required class="form-input">
+                    <span class="field-error" id="deadlineError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="goalCategory">Category</label>
+                    <select id="goalCategory" name="goalCategory" required class="form-select">
+                        <option value="">Select Category</option>
+                        <option value="emergency">🚨 Emergency Fund</option>
+                        <option value="vacation">✈️ Vacation</option>
+                        <option value="car">🚗 Car</option>
+                        <option value="home">🏠 Home</option>
+                        <option value="education">📚 Education</option>
+                        <option value="retirement">🏖️ Retirement</option>
+                        <option value="other">📌 Other</option>
+                    </select>
+                    <span class="field-error" id="goalCategoryError"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-form btn-form-cancel" id="cancelGoalBtn">Cancel</button>
+                    <button type="submit" class="btn-form btn-form-submit"><span>✓</span> Create Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EDIT GOAL MODAL
+══════════════════════════════════════════ -->
+<div class="modal" id="editGoalModal" role="dialog" aria-modal="true" aria-labelledby="editGoalTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-card">
+            <div class="modal-header-new">
+                <div class="modal-header-content">
+                    <div class="modal-icon-large">✏️</div>
+                    <div>
+                        <h2 class="modal-title-new" id="editGoalTitle">Edit Goal</h2>
+                        <p class="modal-subtitle">Update your goal details</p>
+                    </div>
+                </div>
+                <button class="modal-close-new" id="closeEditGoalModal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="editGoalForm" class="transaction-form-new" novalidate>
+                <input type="hidden" id="editGoalId">
+                <div class="form-section">
+                    <label class="form-section-label" for="editGoalName">Goal Name</label>
+                    <input type="text" id="editGoalName" name="editGoalName" placeholder="e.g., Emergency Fund" required class="form-input" maxlength="60">
+                    <span class="field-error" id="editGoalNameError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="editTargetAmount">Target Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="amount-currency">$</span>
+                        <input type="number" id="editTargetAmount" name="editTargetAmount" min="0.01" step="0.01" placeholder="0.00" required class="amount-input">
+                    </div>
+                    <span class="field-error" id="editTargetAmountError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="editCurrentAmount">Current Saved Amount</label>
+                    <div class="amount-input-wrapper">
+                        <span class="amount-currency">$</span>
+                        <input type="number" id="editCurrentAmount" name="editCurrentAmount" min="0" step="0.01" placeholder="0.00" required class="amount-input">
+                    </div>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="editDeadline">Target Date</label>
+                    <input type="date" id="editDeadline" name="editDeadline" required class="form-input">
+                    <span class="field-error" id="editDeadlineError"></span>
+                </div>
+                <div class="form-section">
+                    <label class="form-section-label" for="editGoalCategory">Category</label>
+                    <select id="editGoalCategory" name="editGoalCategory" required class="form-select">
+                        <option value="">Select Category</option>
+                        <option value="emergency">🚨 Emergency Fund</option>
+                        <option value="vacation">✈️ Vacation</option>
+                        <option value="car">🚗 Car</option>
+                        <option value="home">🏠 Home</option>
+                        <option value="education">📚 Education</option>
+                        <option value="retirement">🏖️ Retirement</option>
+                        <option value="other">📌 Other</option>
+                    </select>
+                    <span class="field-error" id="editGoalCategoryError"></span>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-form btn-form-cancel" id="cancelEditGoalBtn">Cancel</button>
+                    <button type="submit" class="btn-form btn-form-submit"><span>✓</span> Update Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     EDIT BUDGETS MODAL
+══════════════════════════════════════════ -->
+<div class="modal" id="editBudgetsModal" role="dialog" aria-modal="true" aria-labelledby="editBudgetsTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-card">
+            <div class="modal-header-new">
+                <div class="modal-header-content">
+                    <div class="modal-icon-large">⚙️</div>
+                    <div>
+                        <h2 class="modal-title-new" id="editBudgetsTitle">Edit Monthly Budgets</h2>
+                        <p class="modal-subtitle">Set your spending limits per category</p>
+                    </div>
+                </div>
+                <button class="modal-close-new" id="closeEditBudgetsModal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <form id="editBudgetsForm" class="transaction-form-new" novalidate>
+                <div class="budget-edit-grid" id="budgetEditGrid">
+                    <!-- Dynamically populated -->
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-form btn-form-cancel" id="cancelEditBudgetsBtn">Cancel</button>
+                    <button type="submit" class="btn-form btn-form-submit"><span>✓</span> Save Budgets</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DELETE CONFIRMATION MODAL
+══════════════════════════════════════════ -->
+<div class="modal" id="deleteConfirmModal" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-container">
+        <div class="modal-card modal-small">
+            <div class="modal-header-new">
+                <div class="modal-header-content">
+                    <div class="modal-icon-large delete-icon">🗑️</div>
+                    <div>
+                        <h2 class="modal-title-new" id="deleteTitle">Confirm Delete</h2>
+                        <p class="modal-subtitle">This action cannot be undone</p>
+                    </div>
+                </div>
+                <button class="modal-close-new" id="closeDeleteModal" aria-label="Close">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="deleteMessage">Are you sure you want to delete this item?</p>
+            </div>
+            <div class="form-actions" style="padding: 0 28px 28px;">
+                <button type="button" class="btn-form btn-form-cancel" id="cancelDeleteBtn">Cancel</button>
+                <button type="button" class="btn-form btn-form-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
